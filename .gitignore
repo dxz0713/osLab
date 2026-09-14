@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+__MACOSX/
+.DS_Store
+
+# data files
+*.npz
+*.zip
+*.bin
+
+# outputs
+*.png
+
+# mindspore data
+lab2/data/cifar10_mindspore/
