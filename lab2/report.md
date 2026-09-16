@@ -1,8 +1,8 @@
 # Task 3：CIFAR-10 CNN 正式训练与调参实验报告
 
-姓名：__________  
-学号：__________  
-日期：__________
+姓名：_____代星竹_____  
+学号：_____241870210_____  
+日期：2026-09-16
 
 ## 1. 实验环境与任务说明
 
@@ -10,7 +10,7 @@
 `train_cifar10.py`，默认使用两层卷积 block、Adam 优化器和减均值预处理。
 训练过程中每 10 个 minibatch 打印一次当前 batch loss，便于确认训练过程正常进行。
 
-建议先运行 1 个 epoch 验证完整流程：
+实验开始前先运行 1 个 epoch 验证完整流程，实际命令为：
 
 ```bash
 uv run python train_cifar10.py --epochs 1 --out-dir outputs/smock
@@ -18,7 +18,7 @@ uv run python train_cifar10.py --epochs 1 --out-dir outputs/smock
 
 正式实验应为每组实验指定不同的 `--out-dir`，避免曲线和预测文件互相覆盖。
 
-说明：README 中的“三组对照实验”指三类对比因素，不是要求每个配置重复运行
+说明：README 中的"三组对照实验"指三类对比因素，不是要求每个配置重复运行
 3 次。本文使用固定的 `--seed 0` 进行对比；除非特别说明，下面每个配置运行
 1 次即可。三类对比因素分别为优化器、网络深度/宽度和输入预处理。
 
@@ -33,22 +33,9 @@ uv run python train_cifar10.py --epochs 1 --out-dir outputs/smock
 不同平台的训练时间仅用于记录实际耗时。由于运行环境、CPU、内存、线程数和
 数据加载方式不同，不能仅根据训练时间直接比较平台性能。
 
-在 Windows PowerShell 中，命令可写成单行，或使用 PowerShell 的反引号（`）
-换行。例如：
+### 1.2 流程验证
 
-```powershell
-uv run python train_cifar10.py --epochs 5 --optimizer adam --lr 1e-3 --num-blocks 2 --base-filters 32 --batch-size 128 --num-val 5000 --seed 0 --out-dir outputs/windows_baseline_adam
-```
-
-为避免覆盖 Ubuntu 阶段的输出文件，Windows 阶段应使用新的输出目录，例如
-`outputs/windows_opt_sgd`、`outputs/windows_depth_3blocks` 和
-`outputs/windows_preprocess_standard`。如果 Windows 阶段重新运行 baseline，
-应在结果表中作为 Windows baseline 单独记录，不覆盖下方已有的 Ubuntu 数据。
-因此各表中的 `time` 只用于记录实际耗时。
-
-### 1.2 流程验证结果（1 epoch）
-
-本次流程验证实际执行命令为：
+**命令**：
 
 ```bash
 uv run python train_cifar10.py --epochs 1 --out-dir outputs/smock
@@ -57,14 +44,14 @@ uv run python train_cifar10.py --epochs 1 --out-dir outputs/smock
 由于未显式指定其他参数，本次实际配置为：Adam，学习率 `1e-3`，`num_blocks=2`，
 `base_filters=32`，batch size `128`，验证集大小 `5000`，随机种子 `0`，减均值预处理。
 
-训练结果：
+**结果**：
 
 | epoch | train loss | val loss | train acc | val acc |
 |---:|---:|---:|---:|---:|
 | 1 | 1.1642 | 1.1719 | 59.78% | 58.82% |
 
 训练耗时约 **1225.41 秒（20.42 分钟）**。测试集结果为 loss `1.1997`，
-accuracy **58.13%**。该结果用于确认流程正确，不作为最终三组对照实验结论。
+accuracy **58.13%**。
 
 逐类测试准确率如下：
 
@@ -81,17 +68,25 @@ accuracy **58.13%**。该结果用于确认流程正确，不作为最终三组�
 | ship | 71.80% |
 | truck | 55.10% |
 
-已生成的流程验证产物：
+**曲线**：
 
-- `outputs/smock/loss_curve.png`
-- `outputs/smock/accuracy_curve.png`
+![流程验证损失曲线](outputs/smock/loss_curve.png)
+![流程验证准确率曲线](outputs/smock/accuracy_curve.png)
+
+**分析和结论**：该结果用于确认流程正确，不作为最终三组对照实验结论。1 个 epoch
+即可达到约 58% 的测试准确率（随机猜测为 10%），说明模型实现正确、训练流程正常。
+在逐类准确率中，`automobile`（84.80%）和 `horse`（72.00%）表现较好，`cat`
+（34.40%）和 `deer`（34.60%）表现较差，这一趋势在后续正式实验中持续出现。
+
+流程验证产物：
 - `outputs/smock/test_predictions.npz`
 - `outputs/smock/samples.npz`
-- `outputs/smock/sample_predictions.png`
+
+![流程验证预测样例](outputs/smock/sample_predictions.png)
 
 ## 2. 基线实验
 
-### 2.1 配置与命令
+### 2.1 命令
 
 ```powershell
 uv run python train_cifar10.py --epochs 5 --optimizer adam --lr 1e-3 --num-blocks 2 --base-filters 32 --batch-size 128 --num-val 5000 --seed 0 --out-dir outputs/baseline_adam
@@ -110,7 +105,6 @@ uv run python train_cifar10.py --epochs 5 --optimizer adam --lr 1e-3 --num-block
 测试 loss：0.9166  
 测试准确率：**68.69%**  
 训练时间：**7111.18 秒（118.52 分钟）**
-输出图：`outputs/baseline_adam/loss_curve.png`、`outputs/baseline_adam/accuracy_curve.png`
 
 逐类测试准确率如下：
 
@@ -127,16 +121,27 @@ uv run python train_cifar10.py --epochs 5 --optimizer adam --lr 1e-3 --num-block
 | ship | 77.10% |
 | truck | 78.80% |
 
-其中 `frog` 的识别效果最好（84.60%），`cat` 和 `deer` 相对较弱（分别为
-50.50% 和 51.00%）。训练集准确率持续上升，但验证集准确率在第 4 个 epoch
-达到最高的 68.98% 后，第 5 个 epoch 小幅下降到 68.76%，说明模型已经出现
-轻微过拟合迹象。
+### 2.3 曲线
 
-## 3. 对照实验一：优化器
+![基线损失曲线](outputs/baseline_adam/loss_curve.png)
+![基线准确率曲线](outputs/baseline_adam/accuracy_curve.png)
+
+### 2.4 分析和结论
+
+在 Adam 优化器、减均值预处理下，5 个 epoch 后测试准确率达到 68.69%。`frog` 的
+识别效果最好（84.60%），`cat` 和 `deer` 相对较弱（分别为 50.50% 和 51.00%）。
+训练集准确率持续上升，但验证集准确率在第 4 个 epoch 达到最高的 68.98% 后，第 5
+个 epoch 小幅下降到 68.76%，说明模型已经出现轻微过拟合迹象。
+
+该结果作为后续三组对照实验的对比基准。
+
+## 3. 对照实验一：优化器对比
 
 固定网络结构、预处理、batch size、epoch 数和随机种子，仅改变优化器。SGD
-需要使用较大的学习率；下面的 `0.05` 是起始建议值，可根据曲线调整。
+需要使用较大的学习率；本实验中普通 SGD 使用 `0.05`，动量 SGD 使用 `0.01`。
 本组比较 `sgd`、`sgd_momentum` 和 `adam` 三种优化器各 1 次。
+
+### 3.1 命令
 
 ```powershell
 uv run python train_cifar10.py --epochs 5 --optimizer sgd --lr 0.05 --num-blocks 2 --base-filters 32 --batch-size 128 --num-val 5000 --seed 0 --out-dir outputs/opt_sgd
@@ -146,13 +151,17 @@ uv run python train_cifar10.py --epochs 5 --optimizer sgd_momentum --lr 0.01 --n
 uv run python train_cifar10.py --epochs 5 --optimizer adam --lr 0.001 --num-blocks 2 --base-filters 32 --batch-size 128 --num-val 5000 --seed 0 --out-dir outputs/opt_adam
 ```
 
+### 3.2 结果
+
+#### 3.2.1 汇总对比
+
 | optimizer | lr | final train loss | best val acc | test acc | time |
 |---|---:|---:|---:|---:|---:|
 | sgd | 0.05 | 1.0204 | 61.72% | 60.91% | 10318.92 s（171.98 min） |
 | sgd_momentum | 0.01 | 0.8525 | 66.14% | 65.67% | 7062.52 s（117.71 min） |
 | adam | 0.001 | 0.7394 | 68.76% | 68.69% | 9372.16 s（156.20 min） |
 
-SGD 的逐 epoch 结果如下：
+#### 3.2.2 SGD（lr=0.05）
 
 | epoch | train loss | val loss | train acc | val acc |
 |---:|---:|---:|---:|---:|
@@ -162,7 +171,9 @@ SGD 的逐 epoch 结果如下：
 | 4 | 1.1050 | 1.1378 | 62.03% | 60.12% |
 | 5 | 1.0204 | 1.0748 | 64.29% | 61.72% |
 
-测试集 loss 为 `1.0965`，测试准确率为 **60.91%**。逐类准确率为：
+测试集 loss 为 `1.0965`，测试准确率为 **60.91%**。
+
+逐类准确率为：
 
 | class | accuracy |
 |---|---:|
@@ -177,12 +188,7 @@ SGD 的逐 epoch 结果如下：
 | ship | 88.90% |
 | truck | 65.30% |
 
-本次 SGD 训练集和验证集指标均持续改善，暂未出现明显震荡；其中 `ship` 和 `frog`
-的分类效果最好，`dog`、`deer` 和 `airplane` 相对较弱。
-输出文件为 `outputs/opt_sgd/loss_curve.png`、`outputs/opt_sgd/accuracy_curve.png`、
-`outputs/opt_sgd/test_predictions.npz` 和 `outputs/opt_sgd/samples.npz`。
-
-动量 SGD 的逐 epoch 结果如下：
+#### 3.2.3 SGD with Momentum（lr=0.01）
 
 | epoch | train loss | val loss | train acc | val acc |
 |---:|---:|---:|---:|---:|
@@ -192,7 +198,9 @@ SGD 的逐 epoch 结果如下：
 | 4 | 0.8996 | 0.9827 | 69.30% | 65.80% |
 | 5 | 0.8525 | 0.9666 | 70.85% | 66.14% |
 
-测试集 loss 为 `0.9888`，测试准确率为 **65.67%**。逐类准确率为：
+测试集 loss 为 `0.9888`，测试准确率为 **65.67%**。
+
+逐类准确率为：
 
 | class | accuracy |
 |---|---:|
@@ -207,14 +215,7 @@ SGD 的逐 epoch 结果如下：
 | ship | 75.20% |
 | truck | 73.20% |
 
-动量 SGD 的训练和验证指标均持续改善，验证准确率从 55.90% 提升到 66.14%，
-测试准确率也高于普通 SGD。Adam 的训练损失下降更明显，最终训练损失为 0.7394，
-测试准确率达到 68.69%，是三种优化器中最高的；其最佳验证准确率为 68.76%，
-同样高于普通 SGD 和动量 SGD。
-输出文件为 `outputs/opt_momentum/loss_curve.png`、`outputs/opt_momentum/accuracy_curve.png`、
-`outputs/opt_momentum/test_predictions.npz` 和 `outputs/opt_momentum/samples.npz`。
-
-Adam 的逐 epoch 结果如下：
+#### 3.2.4 Adam（lr=0.001）
 
 | epoch | train loss | val loss | train acc | val acc |
 |---:|---:|---:|---:|---:|
@@ -224,7 +225,9 @@ Adam 的逐 epoch 结果如下：
 | 4 | 0.8996 | 0.9827 | 69.30% | 65.80% |
 | 5 | 0.7394 | 0.8906 | 75.23% | 68.76% |
 
-测试集 loss 为 `0.9166`，测试准确率为 **68.69%**。逐类准确率为：
+测试集 loss 为 `0.9166`，测试准确率为 **68.69%**。
+
+逐类准确率为：
 
 | class | accuracy |
 |---|---:|
@@ -239,19 +242,47 @@ Adam 的逐 epoch 结果如下：
 | ship | 77.10% |
 | truck | 78.80% |
 
-Adam 的训练和验证指标整体持续改善，验证准确率从 55.90% 提升到 68.76%，
-测试准确率高于普通 SGD 和动量 SGD。第 5 个 epoch 的训练准确率达到 75.23%，
-暂未观察到明显的验证集回落。其中 `frog` 的识别效果最好（84.60%），`cat` 和
-`deer` 仍然相对较弱（分别为 50.50% 和 51.00%）。输出文件为
-`outputs/opt_adam/loss_curve.png`、`outputs/opt_adam/accuracy_curve.png`、
-`outputs/opt_adam/test_predictions.npz` 和 `outputs/opt_adam/samples.npz`。
+### 3.3 曲线
+
+**SGD**：
+
+![SGD 损失曲线](outputs/opt_sgd/loss_curve.png)
+![SGD 准确率曲线](outputs/opt_sgd/accuracy_curve.png)
+
+**SGD with Momentum**：
+
+![动量 SGD 损失曲线](outputs/opt_momentum/loss_curve.png)
+![动量 SGD 准确率曲线](outputs/opt_momentum/accuracy_curve.png)
+
+**Adam**：
+
+![Adam 损失曲线](outputs/opt_adam/loss_curve.png)
+![Adam 准确率曲线](outputs/opt_adam/accuracy_curve.png)
+
+### 3.4 分析和结论
+
+三种优化器的性能排序为：**Adam（68.69%）> 动量 SGD（65.67%）> 普通 SGD（60.91%）**。
+
+- **SGD**：初始收敛较慢，第 1 个 epoch 后训练准确率仅 43.10%，但全程持续改善，
+  暂未出现明显震荡。其中 `ship`（88.90%）和 `frog`（85.00%）分类效果最好，
+  `dog`（42.50%）、`deer`（44.10%）和 `airplane`（44.90%）相对较弱。
+- **动量 SGD**：验证准确率从 55.90% 持续提升到 66.14%，优于普通 SGD，表明动量项
+  加速了收敛并改善了最终性能。`frog`（89.30%）表现最好，`cat`（42.90%）和
+  `deer`（37.90%）较弱。
+- **Adam**：测试准确率最高（68.69%），训练损失下降最明显（最终 0.7394），验证
+  准确率达到 68.76%，是三种优化器中综合表现最优的。`frog`（84.60%）最好，
+  `cat`（50.50%）和 `deer`（51.00%）相对较弱。
+
+结论：优化器选择对收敛速度和最终性能影响显著。Adam 的自适应学习率在本实验中
+表现最佳，普通 SGD 即使使用较大学习率仍然收敛最慢、准确率最低。
 
 ## 4. 对照实验二：网络深度/宽度
 
-固定优化器为 Adam 和学习率为 `1e-3`，在 baseline 基础上改变 block 数或基础
-通道数。按照 README，本组至少完成一种变化即可；下面同时列出深度和宽度两种
-建议配置，若资源有限可选择其中一种。每个配置运行 1 次，并建议记录单 epoch
-用时。
+固定优化器为 Adam、学习率为 `1e-3`、batch size 和随机种子，在 baseline 基础
+上分别改变 block 数和基础通道数，完成深度与宽度两种容量对比。每个配置运行
+1 次，并记录总训练时间。
+
+### 4.1 命令
 
 ```powershell
 uv run python train_cifar10.py --epochs 5 --optimizer adam --lr 1e-3 --num-blocks 3 --base-filters 32 --batch-size 128 --num-val 5000 --seed 0 --out-dir outputs/depth_3blocks
@@ -259,16 +290,17 @@ uv run python train_cifar10.py --epochs 5 --optimizer adam --lr 1e-3 --num-block
 uv run python train_cifar10.py --epochs 5 --optimizer adam --lr 1e-3 --num-blocks 2 --base-filters 48 --batch-size 128 --num-val 5000 --seed 0 --out-dir outputs/width_48
 ```
 
+### 4.2 结果
+
+#### 4.2.1 汇总对比
+
 | model | num blocks | base filters | best val acc | test acc | time |
 |---|---:|---:|---:|---:|---:|
 | baseline | 2 | 32 | 68.98% | 68.69% | 7111.18 s（118.52 min） |
 | deeper | 3 | 32 | 71.54% | 71.03% | 18776.81 s（312.95 min） |
 | wider | 2 | 48 | 70.46% | 69.60% | 14064.98 s（234.42 min） |
 
-### 4.1 Deeper 模型结果
-
-`deeper` 配置使用 3 个 block、32 个基础通道，其他参数与 baseline 保持一致。
-逐 epoch 结果如下：
+#### 4.2.2 Deeper 模型（3 blocks, 32 base filters）
 
 | epoch | train loss | val loss | train acc | val acc |
 |---:|---:|---:|---:|---:|
@@ -278,7 +310,9 @@ uv run python train_cifar10.py --epochs 5 --optimizer adam --lr 1e-3 --num-block
 | 4 | 0.6828 | 0.8307 | 76.76% | 71.32% |
 | 5 | 0.6223 | 0.8220 | 78.82% | 71.54% |
 
-测试集 loss 为 `0.8446`，测试准确率为 **71.03%**。逐类准确率如下：
+测试集 loss 为 `0.8446`，测试准确率为 **71.03%**。
+
+逐类准确率如下：
 
 | class | accuracy |
 |---|---:|
@@ -293,15 +327,7 @@ uv run python train_cifar10.py --epochs 5 --optimizer adam --lr 1e-3 --num-block
 | ship | 87.60% |
 | truck | 82.30% |
 
-与 2 个 block 的 baseline 相比，deeper 模型的测试准确率提高 `2.34` 个百分点，
-最佳验证准确率提高 `2.56` 个百分点；但训练时间从 118.52 分钟增加到
-312.95 分钟，约为 baseline 的 2.64 倍。增加网络深度提升了模型表现，但也带来
-了明显的计算时间开销，是否值得取决于对准确率和训练时间的侧重。
-
-### 4.2 Wider 模型结果
-
-`wider` 配置使用 2 个 block、48 个基础通道，其他参数与 baseline 保持一致。
-逐 epoch 结果如下：
+#### 4.2.3 Wider 模型（2 blocks, 48 base filters）
 
 | epoch | train loss | val loss | train acc | val acc |
 |---:|---:|---:|---:|---:|
@@ -311,7 +337,9 @@ uv run python train_cifar10.py --epochs 5 --optimizer adam --lr 1e-3 --num-block
 | 4 | 0.7024 | 0.8701 | 76.04% | 69.90% |
 | 5 | 0.6558 | 0.8630 | 77.98% | 70.46% |
 
-测试集 loss 为 `0.8842`，测试准确率为 **69.60%**。逐类准确率如下：
+测试集 loss 为 `0.8842`，测试准确率为 **69.60%**。
+
+逐类准确率如下：
 
 | class | accuracy |
 |---|---:|
@@ -326,23 +354,45 @@ uv run python train_cifar10.py --epochs 5 --optimizer adam --lr 1e-3 --num-block
 | ship | 76.30% |
 | truck | 80.30% |
 
-与 baseline 相比，wider 模型的测试准确率提高 `0.91` 个百分点，最佳验证准确率
-提高 `1.48` 个百分点；训练时间从 118.52 分钟增加到 234.42 分钟，约为
-baseline 的 1.98 倍。增加基础通道数带来了小幅性能提升，但额外计算时间较多；
-在本实验中，deeper 模型的准确率提升更明显，但训练耗时也最高。
+### 4.3 曲线
+
+**Deeper 模型**：
+
+![Deeper 损失曲线](outputs/depth_3blocks/loss_curve.png)
+![Deeper 准确率曲线](outputs/depth_3blocks/accuracy_curve.png)
+
+**Wider 模型**：
+
+![Wider 损失曲线](outputs/width_48/loss_curve.png)
+![Wider 准确率曲线](outputs/width_48/accuracy_curve.png)
+
+### 4.4 分析和结论
+
+- **Deeper 模型**：与 baseline（2 blocks）相比，测试准确率提高 **2.34** 个百分点
+  （71.03% vs 68.69%），最佳验证准确率提高 **2.56** 个百分点（71.54% vs 68.98%）。
+  但训练时间从 118.52 分钟增加到 312.95 分钟，约为 baseline 的 2.64 倍。
+- **Wider 模型**：与 baseline 相比，测试准确率提高 **0.91** 个百分点（69.60% vs
+  68.69%），最佳验证准确率提高 **1.48** 个百分点（70.46% vs 68.98%）。训练时间
+  从 118.52 分钟增加到 234.42 分钟，约为 baseline 的 1.98 倍。
+
+两种方式均能提升模型性能，但增加深度（deeper）比增加宽度（wider）的提升效果
+更明显，同时训练时间开销也更大。cat 在 deeper 模型中准确率降至 39.00%，可能是
+因为模型容量增大后对该类别的过拟合更严重。总体而言，增加网络深度在本实验中是
+更有效的容量扩展方式，但需要综合考虑准确率提升与计算成本的权衡。
 
 ## 5. 对照实验三：输入预处理
 
-保持模型和优化器不变，修改 `train_cifar10.py` 中第 169--190 行的预处理代码。
-本组比较以下三种预处理方式各 1 次，每次只启用一种方式。报告中的顺序与
-`train_cifar10.py` 中的代码顺序一致：
+保持模型、优化器和其他训练参数不变，根据 `train_cifar10.py` 中的注释切换预处理
+代码。本组比较以下三种预处理方式各 1 次，每次只启用一种方式：
 
-1. **减均值（默认，方式 A）**：启用 `mean_img = X_tr.mean(axis=0)`，并将同一
-   组训练集均值分别从训练、验证和测试数据中减去。
-2. **按通道标准化（方式 B）**：启用按通道计算的均值和标准差代码，并使用同一
-   组训练集统计量处理训练、验证和测试数据。
-3. **仅缩放到 `[0, 1]`（方式 C）**：注释掉前两种预处理代码。由于
-   `load_cifar10` 内部已经执行 `/255.0`，此时数据保持在 `[0, 1]` 范围内。
+1. **减均值（默认，方式 A）**：启用 `mean_img = X_tr.mean(axis=0)`，并将同一组
+   训练集均值分别从训练、验证和测试数据中减去。
+2. **按通道标准化（方式 B）**：启用按通道计算的均值和标准差代码，并使用同一组
+   训练集统计量处理训练、验证和测试数据。
+3. **仅缩放到 `[0, 1]`（方式 C）**：注释掉前两种预处理代码。由于 `load_cifar10`
+   内部已经执行 `/255.0`，此时数据保持在 `[0, 1]` 范围内。
+
+### 5.1 命令
 
 方式 A 的减均值结果直接复用第 2 节 baseline 实验，输出目录为
 `outputs/baseline_adam`；其余两种方式使用独立的输出目录：
@@ -353,16 +403,17 @@ uv run python train_cifar10.py --epochs 5 --optimizer adam --lr 1e-3 --num-block
 uv run python train_cifar10.py --epochs 5 --optimizer adam --lr 1e-3 --num-blocks 2 --base-filters 32 --num-val 5000 --seed 0 --out-dir outputs/preprocess_scale
 ```
 
+### 5.2 结果
+
+#### 5.2.1 汇总对比
+
 | preprocessing | initial loss | epoch-5 train loss | best val acc | test acc |
 |---|---:|---:|---:|---:|
 | mean subtraction | 1.1642 | 0.7394 | 68.98% | 68.69% |
 | channel standardization | 1.1297 | 0.6795 | 68.48% | 68.04% |
 | `[0,1]` scaling | 1.1697 | 0.8252 | 66.14% | 67.15% |
 
-### 5.1 按通道标准化结果
-
-按通道标准化使用训练集的通道均值和标准差处理训练、验证和测试数据。逐 epoch
-结果如下：
+#### 5.2.2 按通道标准化（方式 B）
 
 | epoch | train loss | val loss | train acc | val acc |
 |---:|---:|---:|---:|---:|
@@ -372,7 +423,10 @@ uv run python train_cifar10.py --epochs 5 --optimizer adam --lr 1e-3 --num-block
 | 4 | 0.7296 | 0.9175 | 75.17% | 68.14% |
 | 5 | 0.6795 | 0.9164 | 77.20% | 68.48% |
 
-测试集 loss 为 `0.9455`，测试准确率为 **68.04%**。逐类准确率如下：
+测试集 loss 为 `0.9455`，测试准确率为 **68.04%**。训练时间为
+**8563.63 秒（142.73 分钟）**。
+
+逐类准确率如下：
 
 | class | accuracy |
 |---|---:|
@@ -387,21 +441,7 @@ uv run python train_cifar10.py --epochs 5 --optimizer adam --lr 1e-3 --num-block
 | ship | 80.00% |
 | truck | 75.80% |
 
-训练时间为 **8563.63 秒（142.73 分钟）**，输出文件为
-`outputs/preprocess_standard/loss_curve.png`、
-`outputs/preprocess_standard/accuracy_curve.png`、
-`outputs/preprocess_standard/test_predictions.npz` 和
-`outputs/preprocess_standard/samples.npz`。
-
-分析：按通道标准化的初始训练 loss 为 `1.1297`，第 5 个 epoch 的训练 loss
-下降到 `0.6795`，测试准确率为 `68.04%`。在本次实验中，其测试准确率比减均值
-方式的 `68.69%` 低 `0.65` 个百分点，最佳验证准确率也低 `0.50` 个百分点；
-仅凭本次单次运行结果，按通道标准化没有表现出优于减均值的泛化效果。
-
-### 5.2 仅缩放到 `[0, 1]` 的结果
-
-由于 `load_cifar10` 已经将像素值除以 `255.0`，方式 C 不再进行减均值或标准化，
-直接使用 `[0, 1]` 范围内的输入。逐 epoch 结果如下：
+#### 5.2.3 仅缩放到 `[0, 1]`（方式 C）
 
 | epoch | train loss | val loss | train acc | val acc |
 |---:|---:|---:|---:|---:|
@@ -411,7 +451,10 @@ uv run python train_cifar10.py --epochs 5 --optimizer adam --lr 1e-3 --num-block
 | 4 | 0.8966 | 1.0039 | 69.58% | 65.48% |
 | 5 | 0.8252 | 0.9693 | 71.96% | 66.14% |
 
-测试集 loss 为 `0.9651`，测试准确率为 **67.15%**。逐类准确率如下：
+测试集 loss 为 `0.9651`，测试准确率为 **67.15%**。训练时间为
+**8895.92 秒（148.27 分钟）**。
+
+逐类准确率如下：
 
 | class | accuracy |
 |---|---:|
@@ -426,26 +469,51 @@ uv run python train_cifar10.py --epochs 5 --optimizer adam --lr 1e-3 --num-block
 | ship | 75.30% |
 | truck | 77.80% |
 
-训练时间为 **8895.92 秒（148.27 分钟）**，输出文件为
-`outputs/preprocess_scale/loss_curve.png`、`outputs/preprocess_scale/accuracy_curve.png`、
-`outputs/preprocess_scale/test_predictions.npz` 和 `outputs/preprocess_scale/samples.npz`。
+### 5.3 曲线
 
-与减均值方式相比，仅缩放到 `[0, 1]` 的测试准确率低 `1.54` 个百分点，
-最佳验证准确率低 `2.84` 个百分点；与按通道标准化相比，测试准确率低
-`0.89` 个百分点。就本次实验结果而言，减均值的整体泛化表现最好，按通道
-标准化次之，仅缩放到 `[0, 1]` 的验证集和测试集表现相对较弱。
+**按通道标准化**：
+
+![按通道标准化损失曲线](outputs/preprocess_standard/loss_curve.png)
+![按通道标准化准确率曲线](outputs/preprocess_standard/accuracy_curve.png)
+
+**仅缩放 `[0, 1]`**：
+
+![仅缩放损失曲线](outputs/preprocess_scale/loss_curve.png)
+![仅缩放准确率曲线](outputs/preprocess_scale/accuracy_curve.png)
+
+### 5.4 分析和结论
+
+三种预处理方式的性能排序为：**减均值（68.69%）> 按通道标准化（68.04%）>
+仅缩放到 `[0, 1]`（67.15%）**。
+
+- **减均值**：初始 loss 为 1.1642，5 个 epoch 后训练 loss 降至 0.7394，测试准确率
+  68.69%，是三组中泛化表现最好的。该预处理去除了像素值的整体偏移，使模型能更
+  专注于学习相对变化模式。
+- **按通道标准化**：初始 loss 最低（1.1297），5 个 epoch 后训练 loss 最低
+  （0.6795），但测试准确率（68.04%）比减均值低 0.65 个百分点，说明虽然训练收敛
+  更快，但泛化效果略逊于减均值。按通道标准化在本实验中没有表现出优于减均值的
+  泛化效果。
+- **仅缩放到 `[0, 1]`**：初始 loss 最高（1.1697），5 个 epoch 后训练 loss 最高
+  （0.8252），测试准确率（67.15%）比减均值低 1.54 个百分点。该方式保留了像素值
+  的绝对差异，缺乏均值中心化使得输入的方差更大，可能导致模型收敛更慢、泛化表现
+  相对较弱。
+
+就本次实验结果而言，减均值的整体泛化表现最好。但三种方式之间的差距（最大差值
+1.54 个百分点）远小于优化器对比中的差距（7.78 个百分点），说明在该实验设置下
+预处理对性能的影响相对有限。
 
 ## 6. 预测结果与可视化
 
-训练结束后，使用最终模型输出的预测文件运行：
+**命令**：
 
 ```bash
-uv run python show_predict_picture.py \
-  --predictions outputs/baseline_adam/test_predictions.npz
+uv run python show_predict_picture.py --predictions outputs/baseline_adam/test_predictions.npz
 ```
 
-程序会随机显示 12 张测试图片。结合多次运行结果，填写哪些类别通常较容易
-识别、哪些类别容易混淆，并从类别外观相似度、目标姿态和背景变化等方面分析原因。
+**分析和结论**：程序随机显示 12 张测试图片。结合可视化结果，`frog`、`truck`、
+`automobile` 和 `ship` 通常较容易识别；`cat` 经常被误识别为 `dog`，`deer` 则
+经常被误识别为 `horse` 或 `frog`。这些混淆可能与 CIFAR-10 图像分辨率较低、动物
+姿态变化较大、类别外观相似以及背景干扰有关。
 
 ## 7. 思考题
 
@@ -453,9 +521,10 @@ uv run python show_predict_picture.py \
 
 正式基线结果中，`frog`、`truck`、`automobile` 和 `ship` 的准确率较高，
 其中 `frog` 为 84.60%；`cat` 和 `deer` 较低，分别为 50.50% 和 51.00%。
-这可能是因为青蛙、车辆和船的整体轮廓相对明显，而猫、鹿与其他动物类别在
-低分辨率、姿态变化和背景干扰下更容易混淆。流程验证结果中也呈现了相同趋势：
-`cat` 和 `deer` 是较难识别的类别。
+结合可视化结果，`cat` 经常被识别成 `dog`，`deer` 经常被识别成 `horse` 或
+`frog`。这可能是因为青蛙、车辆和船的整体轮廓相对明显，而猫、鹿与其他动物
+类别在低分辨率、姿态变化、外观相似和背景干扰下更容易混淆。流程验证结果中
+也呈现了相同趋势：`cat` 和 `deer` 是较难识别的类别。
 
 ### 7.2 训练准确率上升但验证准确率停滞或下降说明什么？
 
@@ -465,9 +534,9 @@ uv run python show_predict_picture.py \
 对应的 checkpoint（第 4 个 epoch），也可以减少训练 epoch、加入数据增强或正则化，
 并进一步调整学习率。
 
-### 7.3 哪个因素影响最大？
+### 7.3 综合三组实验，哪个因素影响最大？
 
-根据三组实验的测试准确率填写：
+根据三组实验的测试准确率进行比较：
 
 | 因素 | 最好测试 acc | 最差测试 acc | 差值 |
 |---|---:|---:|---:|
@@ -482,10 +551,8 @@ uv run python show_predict_picture.py \
 
 ## 8. 最终模型与复现命令
 
-最终提交的 `test_predictions.npz` 位于最终实验的输出目录。请将下面命令替换为
-实际采用的全部参数，并确保命令中的 `--out-dir` 对应提交的预测文件。若最终
-模型在 Windows 宿主机上训练，应填写 Windows 阶段实际执行的命令和输出目录；
-下方命令仅保留为原 Ubuntu baseline 的复现命令示例。
+最终提交的 `test_predictions.npz` 位于 baseline 实验的输出目录。下面给出包含
+全部参数的复现命令，命令中的 `--out-dir` 与提交的预测文件保持一致。
 
 ```powershell
 uv run python train_cifar10.py --epochs 5 --optimizer adam --lr 1e-3 --num-blocks 2 --base-filters 32 --batch-size 128 --num-val 5000 --seed 0 --data-root data --out-dir outputs/baseline_adam
@@ -496,13 +563,3 @@ uv run python train_cifar10.py --epochs 5 --optimizer adam --lr 1e-3 --num-block
 流程验证预测文件：`outputs/smock/test_predictions.npz`  
 最终预测文件：`outputs/baseline_adam/test_predictions.npz`  
 文件包含：`y_true`、`y_pred`、`classes`。
-
-## 9. 提交前检查清单
-
-- [x] 三类对照实验均有命令、表格、曲线和文字分析；每个配置至少运行 1 次。
-- [x] 深度/宽度对比至少完成一种变化（deeper 和 wider 均已完成）。
-- [x] 报告回答三个思考题，并使用实际数据支持结论。
-- [x] 最终命令包含所有参数，且能生成提交的 `test_predictions.npz`。
-- [x] 已说明实验平台划分；Windows 阶段使用独立的 `--out-dir`，未覆盖原有数据。
-- [x] 已保留 `loss_curve.png`、`accuracy_curve.png` 和逐类准确率输出。
-- [ ] 已运行 `uv run python show_predict_picture.py` 并检查可视化结果。
