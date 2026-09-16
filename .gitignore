@@ -10,6 +10,10 @@ __MACOSX/
 
 # outputs
 *.png
+!lab2/outputs/
+!lab2/outputs/**
 
 # mindspore data
 lab2/data/cifar10_mindspore/
+
+.vscode/
